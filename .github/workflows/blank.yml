@@ -1,0 +1,79 @@
+import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
+import { Car } from '../types';
+import { useWebhooks } from './WebhookContext';
+
+interface InventoryContextType {
+  cars: Car[];
+  loading: boolean;
+  addCar: (carData: Omit<Car, 'id' | 'createdAt'>) => Promise<void>;
+  updateCar: (carId: string, carData: Partial<Omit<Car, 'id' | 'createdAt'>>) => Promise<void>;
+  deleteCar: (carId: string) => Promise<void>;
+}
+
+const InventoryContext = createContext<InventoryContextType | undefined>(undefined);
+
+export const InventoryProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const [cars, setCars] = useState<Car[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { fireWebhooks } = useWebhooks();
+
+  useEffect(() => {
+    try {
+      const storedCars = localStorage.getItem('showroom_inventory');
+      if (storedCars) {
+        setCars(JSON.parse(storedCars).sort((a: Car, b: Car) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
+      }
+    } catch (error) {
+      console.error("Failed to parse inventory from localStorage", error);
+    }
+    setLoading(false);
+  }, []);
+
+  const addCar = async (carData: Omit<Car, 'id' | 'createdAt'>) => {
+    const newCar: Car = {
+      ...carData,
+      id: `car-${Date.now()}`,
+      createdAt: new Date().toISOString(),
+    };
+    
+    setCars(prevCars => {
+        const updatedCars = [newCar, ...prevCars].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        localStorage.setItem('showroom_inventory', JSON.stringify(updatedCars));
+        return updatedCars;
+    });
+
+    await fireWebhooks(newCar);
+  };
+
+  const updateCar = async (carId: string, carData: Partial<Omit<Car, 'id' | 'createdAt'>>) => {
+    setCars(prevCars => {
+        const updatedCars = prevCars.map(car =>
+            car.id === carId ? { ...car, ...carData } : car
+        ).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        localStorage.setItem('showroom_inventory', JSON.stringify(updatedCars));
+        return updatedCars;
+    });
+  };
+
+  const deleteCar = async (carId: string) => {
+    setCars(prevCars => {
+        const updatedCars = prevCars.filter(car => car.id !== carId);
+        localStorage.setItem('showroom_inventory', JSON.stringify(updatedCars));
+        return updatedCars;
+    });
+  };
+
+  return (
+    <InventoryContext.Provider value={{ cars, loading, addCar, updateCar, deleteCar }}>
+      {children}
+    </InventoryContext.Provider>
+  );
+};
+
+export const useInventory = (): InventoryContextType => {
+  const context = useContext(InventoryContext);
+  if (context === undefined) {
+    throw new Error('useInventory must be used within an InventoryProvider');
+  }
+  return context;
+};
