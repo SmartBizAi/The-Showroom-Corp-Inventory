@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { Sidebar } from '@/components/Sidebar';
 import { currentDealer } from '@/lib/session';
-import { readDb, today } from '@/lib/store';
+import { readDb, storageMode, today } from '@/lib/store';
 
 export const metadata: Metadata = {
   title: 'Showroom Hub',
@@ -20,6 +20,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   ).length;
   const newLeads = db.leads.filter((l) => l.dealerId === dealer.id && l.stage === 'new').length;
   const liveCount = dealer.connections.filter((c) => c.connected && c.live).length;
+  const ephemeral = storageMode() === 'ephemeral';
 
   return (
     <html lang="es">
@@ -30,6 +31,12 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             <span>
               Ninguna cuenta tiene credenciales reales todavía, así que las publicaciones se
               registran pero no salen a las plataformas. Conéctalas en <strong>Conexiones</strong>.
+              {ephemeral && (
+                <>
+                  {' '}Además, este servidor no guarda en disco: los cambios duran mientras la
+                  instancia siga viva.
+                </>
+              )}
             </span>
           </div>
         )}
