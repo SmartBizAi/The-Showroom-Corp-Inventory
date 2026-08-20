@@ -14,3 +14,4 @@ SaaS de marketing y atención al cliente para dealers de autos usados pequeños 
 
 - Código, nombres de tablas y comentarios en inglés; documentación de producto en español; UI bilingüe ES/EN.
 - Rama de trabajo: `claude/clean-repo-new-project-y4tis1`.
+- Demo funcional en el repo (Next.js). Ver `README.md` para arrancarla; `src/lib/store.ts` es la capa de datos que se reemplaza por Supabase.
