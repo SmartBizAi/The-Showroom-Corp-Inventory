@@ -30,11 +30,116 @@ const PLATFORM_BRIEF: Record<Platform, string> = {
     'WhatsApp: mensaje breve de 2-3 líneas para enviar a un cliente interesado, tono personal.',
 };
 
+/**
+ * Vehicle data is typed once, in whatever language the dealer works in — so the
+ * English caption would otherwise read "Automática · Cámara de reversa". This
+ * covers the vocabulary a used-car lot actually types; anything unlisted passes
+ * through untouched, which is the right answer for "Bluetooth" or "CarPlay".
+ */
+const GLOSSARY_ES_EN: Record<string, string> = {
+  // Transmission and drivetrain
+  'automatica': 'Automatic',
+  'manual': 'Manual',
+  'estandar': 'Manual',
+  'triptronic': 'Tiptronic',
+  'traccion delantera': 'Front-wheel drive',
+  'traccion trasera': 'Rear-wheel drive',
+  'traccion integral': 'All-wheel drive',
+  // Fuel
+  'gasolina': 'Gasoline',
+  'diesel': 'Diesel',
+  'hibrido': 'Hybrid',
+  'electrico': 'Electric',
+  // Equipment
+  'camara de reversa': 'Backup camera',
+  'camara': 'Camera',
+  'sensor de punto ciego': 'Blind spot monitor',
+  'control crucero': 'Cruise control',
+  'asientos de piel': 'Leather seats',
+  'asientos de tela': 'Cloth seats',
+  'asientos calefaccionados': 'Heated seats',
+  'techo solar': 'Sunroof',
+  'techo panoramico': 'Panoramic roof',
+  'enganche de remolque': 'Tow hitch',
+  'cabina doble': 'Crew cab',
+  'aire acondicionado': 'Air conditioning',
+  'frio que corta': 'Ice cold A/C',
+  'llantas nuevas': 'New tires',
+  'un solo dueno': 'One owner',
+  'sin accidentes': 'No accidents',
+  'vidrios electricos': 'Power windows',
+  'arranque sin llave': 'Keyless start',
+  'pantalla tactil': 'Touchscreen',
+  'navegacion': 'Navigation',
+  // Colors — often written as compounds ("gris plata", "blanco perla"), which
+  // the word-wise pass below handles once each word is known.
+  'blanco': 'White',
+  'negro': 'Black',
+  'gris': 'Gray',
+  'plata': 'Silver',
+  'plateado': 'Silver',
+  'rojo': 'Red',
+  'azul': 'Blue',
+  'verde': 'Green',
+  'amarillo': 'Yellow',
+  'naranja': 'Orange',
+  'dorado': 'Gold',
+  'marron': 'Brown',
+  'cafe': 'Brown',
+  'beige': 'Beige',
+  'vino': 'Burgundy',
+  'perla': 'Pearl',
+  'metalico': 'Metallic',
+  // English reverses the modifier order, so the common compounds get their own
+  // entries rather than coming out as "Gray silver".
+  'gris plata': 'Silver gray',
+  'gris oscuro': 'Dark gray',
+  'gris claro': 'Light gray',
+  'blanco perla': 'Pearl white',
+  'negro metalico': 'Metallic black',
+  'azul marino': 'Navy blue',
+  'rojo vino': 'Burgundy',
+};
+
+/** Lowercase and strip accents so "Cámara" and "camara" hit the same entry. */
+const glossaryKey = (s: string): string =>
+  s.trim().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+
+function toEnglish(term: string | null): string | null {
+  if (term === null) return null;
+
+  const whole = GLOSSARY_ES_EN[glossaryKey(term)];
+  if (whole) return whole;
+
+  // Compounds like "gris plata" have no entry of their own; translate the parts
+  // and keep the phrase only if at least one word was actually recognized.
+  const words = term.trim().split(/\s+/);
+  if (words.length < 2) return term;
+
+  let hit = false;
+  const mapped = words.map((w, i) => {
+    const found = GLOSSARY_ES_EN[glossaryKey(w)];
+    if (!found) return w;
+    hit = true;
+    return i === 0 ? found : found.toLowerCase();
+  });
+  return hit ? mapped.join(' ') : term;
+}
+
+/** Picks the caller's language for a value stored in the dealer's own words. */
+const localize = (term: string | null, lang: 'es' | 'en'): string | null =>
+  lang === 'en' ? toEnglish(term) : term;
+
 function templateCaption(v: Vehicle, d: Dealer, platform: Platform, lang: 'es' | 'en'): string {
   const name = `${v.year} ${v.make} ${v.model}${v.trim ? ` ${v.trim}` : ''}`;
   const titleEs = v.titleType === 'clean' ? 'Título limpio' : v.titleType === 'rebuilt' ? 'Título rebuilt' : 'Título salvage';
   const titleEn = v.titleType === 'clean' ? 'Clean title' : v.titleType === 'rebuilt' ? 'Rebuilt title' : 'Salvage title';
-  const feats = v.features.slice(0, 3);
+  // Vehicle-supplied values carry the dealer's own wording — localize them so an
+  // English caption never ships half in Spanish.
+  const feats = v.features.slice(0, 3).map((f) => localize(f, lang) ?? f);
+  const transmission = localize(v.transmission, lang);
+  const fuel = localize(v.fuel, lang);
+  const color = localize(v.exteriorColor, lang);
 
   if (platform === 'instagram') {
     const tags = `#Miami #CarrosEnMiami #${v.make} #${v.make}${v.model.replace(/\s/g, '')} #AutosUsados #MiamiCars #CarrosBaratos #Doral #Hialeah #UsedCars`;
@@ -45,8 +150,8 @@ function templateCaption(v: Vehicle, d: Dealer, platform: Platform, lang: 'es' |
 
   if (platform === 'cargurus') {
     return lang === 'es'
-      ? `${name} con ${miles(v.mileage)} millas. ${titleEs}. ${v.transmission ?? 'Automática'}, ${v.fuel ?? 'gasolina'}, exterior ${v.exteriorColor ?? 'a consultar'}. Equipamiento: ${feats.join(', ') || 'consultar'}. Vehículo inspeccionado y listo para entrega en ${d.city}.${d.financing ? ' Ofrecemos opciones de financiamiento.' : ''} Contáctenos al ${d.phone}.`
-      : `${name} with ${miles(v.mileage)} miles. ${titleEn}. ${v.transmission ?? 'Automatic'}, ${v.fuel ?? 'gasoline'}, ${v.exteriorColor ?? 'color on request'} exterior. Equipment: ${feats.join(', ') || 'ask us'}. Inspected and ready for delivery in ${d.city}.${d.financing ? ' Financing options available.' : ''} Call us at ${d.phone}.`;
+      ? `${name} con ${miles(v.mileage)} millas. ${titleEs}. ${transmission ?? 'Automática'}, ${fuel ?? 'gasolina'}, exterior ${color ?? 'a consultar'}. Equipamiento: ${feats.join(', ') || 'consultar'}. Vehículo inspeccionado y listo para entrega en ${d.city}.${d.financing ? ' Ofrecemos opciones de financiamiento.' : ''} Contáctenos al ${d.phone}.`
+      : `${name} with ${miles(v.mileage)} miles. ${titleEn}. ${transmission ?? 'Automatic'}, ${fuel ?? 'gasoline'}, ${color ?? 'color on request'} exterior. Equipment: ${feats.join(', ') || 'ask us'}. Inspected and ready for delivery in ${d.city}.${d.financing ? ' Financing options available.' : ''} Call us at ${d.phone}.`;
   }
 
   if (platform === 'whatsapp') {
@@ -57,12 +162,12 @@ function templateCaption(v: Vehicle, d: Dealer, platform: Platform, lang: 'es' |
 
   const bulletsEs = [
     `${miles(v.mileage)} millas · ${titleEs}`,
-    `${v.transmission ?? 'Automática'}${feats[0] ? ` · ${feats[0]}` : ''}`,
+    `${transmission ?? 'Automática'}${feats[0] ? ` · ${feats[0]}` : ''}`,
     ...(feats[1] ? [feats.slice(1).join(' · ')] : []),
   ];
   const bulletsEn = [
     `${miles(v.mileage)} miles · ${titleEn}`,
-    `${v.transmission ?? 'Automatic'}${feats[0] ? ` · ${feats[0]}` : ''}`,
+    `${transmission ?? 'Automatic'}${feats[0] ? ` · ${feats[0]}` : ''}`,
     ...(feats[1] ? [feats.slice(1).join(' · ')] : []),
   ];
 
