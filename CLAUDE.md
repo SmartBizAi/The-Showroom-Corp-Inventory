@@ -8,7 +8,7 @@ SaaS de marketing y atención al cliente para dealers de autos usados pequeños 
 
 - Stack: Next.js (TypeScript) + Supabase (Postgres/RLS/Auth/Storage) + Vercel · n8n para workflows · Resend para email · Claude API para captions bilingües.
 - Web app PWA primero (los vendedores la usan del teléfono); nada de app nativa por ahora.
-- Facebook Marketplace NO tiene API para dealers: solo publicación asistida con humano en el loop (ver "Estrategia de 3 carriles" en PLAN.md). Nunca bots headless ni almacenar contraseñas de Facebook.
+- Facebook Marketplace NO tiene API oficial para dealers: publicación asistida por niveles — 1 click por auto o 1 click por día (ver "Niveles de automatización" en PLAN.md). Nunca bots headless, sesiones en la nube, contraseñas de Facebook almacenadas ni técnicas de camuflaje anti-detección.
 
 ## Convenciones
 

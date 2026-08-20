@@ -17,23 +17,25 @@
 1. **Marketing** — publicación diaria automática/asistida del inventario en Facebook Marketplace, Facebook Page, Instagram, CarGurus, OfferUp (y más adelante Craigslist, Autotrader, TikTok), respetando los límites de cada plataforma.
 2. **Atención al cliente** — bandeja unificada de leads (Messenger, Instagram DM, WhatsApp), respuestas rápidas bilingües, seguimiento de cada cliente hasta la venta.
 
+**Principio de producto — "one click":** el trabajo diario del dealer debe caber en un click. Onboarding con wizard (conectar cuentas, subir el Excel, elegir plantilla de captions — ~15 minutos, una sola vez); después, todo lo que tiene vía oficial corre solo, y lo asistido se resuelve con un click por día por vendedor (ver "Niveles de automatización" en §2).
+
 **Por qué ahora:** el mercado ya está validado — CARVID cobra $249/mes, Shiftly ~$1,000/mes, Glo3D vende paquetes con fotografía 360. Ninguno está construido *bilingüe y para Miami*: captions ES/EN nativos, WhatsApp como canal principal de atención, y precio accesible para el dealer chico.
 
 ---
 
 ## 2. La realidad de las integraciones (leer primero)
 
-Esta es la parte que decide la arquitectura. No todas las plataformas se pueden automatizar igual, y venderle al dealer "posteo 100% automático a Marketplace" como hacen algunos competidores implica automatizar el navegador con la sesión del vendedor — eso **viola los términos de Meta y arriesga las cuentas**. Nuestra postura es distinta y es un argumento de venta: automatizamos todo lo que se puede automatizar oficialmente, y lo demás lo dejamos *asistido* (1 minuto por publicación, con humano en el loop).
+Esta es la parte que decide la arquitectura. Y conviene ser precisos: **automatizar Marketplace es técnicamente posible y hay herramientas que lo hacen** (Glo3D, CARVID, Marketplace Pro…). Lo que **no existe es una vía oficial**: Meta eliminó los listados por catálogo (2021) y por Business Page (2023), y hasta su partner histórico AutoSweet abandonó el posting orgánico en 2026 para ofrecer solo ads. Esas herramientas automatizan el navegador del vendedor — o peor, corren su sesión en servidores en la nube — contra el ToS de Meta, y el riesgo (bans silenciosos, cuentas restringidas) lo paga la cuenta del vendedor. Nuestra respuesta: **el mismo resultado de un click, con las protecciones que de verdad importan** (ver niveles de automatización abajo).
 
 | Plataforma | ¿Publicación automática? | Cómo lo haremos | Notas |
 |---|---|---|---|
-| **FB Marketplace** | ❌ No existe API. Meta eliminó los listados por catálogo (sept 2021) y por Business Page (ene 2023). Solo cuentas personales, manual. | **Publicación asistida**: la app prepara todo (fotos, caption ES/EN, precio) y arma la cola diaria de cada vendedor; el vendedor confirma cada publicación (extensión de Chrome que pre-llena el formulario, o flujo copiar/pegar desde el teléfono). | Límites por cuenta: empezar con 3–5/día (best practice citada del sector: máx. 10/día), borrar vendidos <24 h, sin duplicados, renovar en vez de reposteear. |
+| **FB Marketplace** | ❌ Sin API oficial. Meta eliminó los listados por catálogo (sept 2021) y por Business Page (ene 2023). Solo cuentas personales. | **Publicación asistida en dos niveles**: la app prepara todo (fotos, caption ES/EN, precio) y arma la cola diaria de cada vendedor; él confirma auto por auto (Nivel 1) o publica toda la cola del día con un click (Nivel 2 "Turbo"). Extensión de Chrome en desktop; copiar/pegar optimizado desde el teléfono. | Límites por cuenta: empezar con 3–5/día (best practice citada del sector: máx. 10/día), borrar vendidos <24 h, sin duplicados, renovar en vez de repostear. |
 | **FB Page + Instagram** | ✅ Sí — Graph API oficial | Posts orgánicos programados todos los días, totalmente automáticos. | Requiere app de Meta + app review (empezar el trámite temprano, toma semanas). |
 | **Messenger + IG DM** | ✅ Sí — API oficial (bandeja) | Webhooks entrantes → bandeja unificada de leads. | Mismo app review de Meta. |
 | **WhatsApp Business** | ✅ Sí — Cloud API oficial | Canal principal de atención al cliente. Auto-respuestas y plantillas. | Requiere verificación del negocio en Meta. Plantillas aprobadas para mensajes salientes fuera de la ventana de 24 h. |
 | **CarGurus** | 🟡 Por feed de inventario | La app genera un feed (CSV/XML) por dealer, actualizado cada noche; se registra el Feed ID con el account manager de CarGurus. | El dealer necesita su cuenta CarGurus (hay nivel básico y paquetes pagados). Automático una vez configurado. |
 | **OfferUp** | 🟡 Por feed (Verified Dealer Program) | Mismo patrón de feed; OfferUp trabaja con partners de inventario (AutoSweet, Hammer Corp, etc.) — investigar registro directo como partner. | Programa pagado del dealer. |
-| **FB Automotive Inventory Ads** | ✅ Sí — catálogo + Marketing API | Ads pagados con el catálogo de vehículos (retargeting automático). | Fase posterior; presupuesto de ads del dealer. |
+| **FB Automotive Inventory Ads** | ✅ Sí — catálogo + Marketing API | Ads pagados con el catálogo de vehículos. **Hoy es la única vía oficial de aparecer dentro de Marketplace** (placement de ads) — los partners históricos migraron a esto. | Fase posterior; presupuesto de ads del dealer. |
 | **Craigslist** | 🟡 Pago por post (~$5), sin API pública | Asistido al inicio; bulk posting solo vía partners aprobados. | Fase posterior. |
 | **Autotrader / Cars.com** | 🟡 Por feed vía proveedores certificados | Mismo patrón de feed cuando haya demanda. | Suscripción del dealer. |
 | **TikTok / Reels / Shorts** | ✅ APIs oficiales de publicación de video | Videos automáticos por vehículo (foto → video con IA). Diferenciador. | Fase posterior. |
@@ -44,13 +46,22 @@ Esta es la parte que decide la arquitectura. No todas las plataformas se pueden 
 - **Carril B — Feeds de sindicación** (CarGurus, OfferUp, Autotrader): automatización total después de un setup por dealer.
 - **Carril C — Publicación asistida** (Marketplace, Craigslist): la app hace el 95% del trabajo; el humano confirma. Cumple la política de "posteo manual" y protege las cuentas de los vendedores.
 
-**Reglas duras del carril C (innegociables):**
-- Nunca bots headless ni almacenar contraseñas de Facebook. La sesión vive en el navegador del vendedor.
-- Cuentas reales y personales de cada vendedor; jamás cuentas compradas o falsas.
-- Un mismo vehículo se publica desde **una sola cuenta a la vez** (la rotación lo reasigna, nunca duplica).
-- Cadencia conservadora por cuenta: 3/día cuentas nuevas → hasta 5–8/día cuentas con antigüedad.
-- Renovar listados (función nativa de FB cada ~7 días) en vez de borrar y repostear.
-- Vendido → recordatorio inmediato de borrarlo de Marketplace (y borrado automático en Page/IG/feeds).
+### Niveles de automatización para Marketplace (se eligen por cuenta)
+
+Así se cumple el requisito de "one click" sin regalar las cuentas de los vendedores:
+
+| Nivel | Cómo funciona | Riesgo |
+|---|---|---|
+| **0 — Cero clicks** | Todo lo que tiene vía oficial corre solo y programado: FB Page, Instagram, feeds de CarGurus/OfferUp y Automotive Inventory Ads (la presencia oficial dentro de Marketplace, pagada). | Ninguno. |
+| **1 — Un click por auto** (default) | La extensión pre-llena el formulario completo (fotos, caption, precio, categoría, ubicación); el vendedor revisa y pulsa Publicar. ~1 minuto por auto, ~5 min/día. | Bajo — hay revisión humana real de cada listado. |
+| **2 — Un click por día** ("Turbo", opt-in) | El vendedor abre Facebook, pulsa **"Publicar la cola de hoy"** y la extensión publica los 3–5 autos del día en su navegador, con él presente. Funcionalmente igual a lo que venden Glo3D, CARVID o Marketplace Pro. | Asumido con consentimiento explícito: para el ToS de Meta es automatización; si la detectan, la restricción cae sobre esa cuenta. Se activa por cuenta, con aviso claro. |
+
+**Reglas duras (innegociables, aplican a todos los niveles):**
+- La sesión de Facebook vive **únicamente en el navegador del vendedor**. Nunca sesiones en la nube ni contraseñas/cookies en nuestro backend — las herramientas cloud con IPs de datacenter son la causa №1 de bans silenciosos.
+- **Sin técnicas de camuflaje** (simulación de tipeo humano, delays "aleatorios", etc.): automatizamos a cara descubierta o no automatizamos. La seguridad real está en la cadencia, el navegador propio y listados de calidad.
+- Cuentas reales y personales de cada vendedor; jamás compradas o falsas.
+- Un mismo vehículo desde **una sola cuenta a la vez**; la rotación reasigna, nunca duplica.
+- Cadencia: 3/día cuentas nuevas → hasta 5–8/día con antigüedad; renovar listados (función nativa de FB, ~7 días) en vez de repostear; vendidos fuera de Marketplace en <24 h (y borrado automático en Page/IG/feeds).
 
 ---
 
@@ -79,7 +90,7 @@ Ejemplo (Marketplace ES):
 
 ### 3.3 Motor de publicación
 - **Calendario y colas**: reglas por plataforma y por cuenta (máx N/día, ventanas horarias "naturales", rotación del inventario priorizando autos recién llegados o con días sin leads).
-- **Cola diaria por vendedor** para Marketplace: página móvil "Para publicar hoy" + extensión Chrome en desktop.
+- **Cola diaria por vendedor** para Marketplace: página móvil "Para publicar hoy" + extensión Chrome en desktop; publica auto por auto o toda la cola en un click, según el nivel elegido.
 - **Publicación directa programada** a FB Page e Instagram (Graph API).
 - **Feeds nocturnos** regenerados para CarGurus/OfferUp.
 - **Registro de cada post**: plataforma, cuenta, fecha, link — auditable por auto.
@@ -199,3 +210,6 @@ Referencias del mercado: CARVID $249/mes · Shiftly ~$1,000/mes · Glo3D (paquet
 - [CarGurus se alimenta por feed de un proveedor de inventario](https://dealercenter.cargurus.com/product-info/why-an-inventory-feed-provider-is-the-key-to-advertising-on-cargurus/) · [ejemplo de setup de feed](https://help.motordesk.com/docs/faq/cargurus-feed/)
 - [OfferUp Verified Dealer Program (feeds vía partners)](https://blog.offerup.com/offerup-expands-verified-dealer-program-to-include-dealer-inventory-and)
 - [Panorama de herramientas competidoras y precios (CARVID, Shiftly, Glo3D)](https://www.carvidapp.com/best-facebook-marketplace-tools/)
+- [AutoSweet (partner histórico de Meta) dejó el posting orgánico a Marketplace en 2026; solo ofrece ads con placement en Marketplace](https://www.autosweet.com/blog/big-changes-to-facebook-marketplace-for-dealerships/)
+- [DealerRefresh: sesiones en la nube desde IPs de datacenter = bans silenciosos; la pregunta de seguridad que los dealers no hacen](https://forum.dealerrefresh.com/threads/fb-marketplace-auto-posters-the-account-safety-question-most-dealers-skip.13412/)
+- [Las herramientas de auto-posting violan las reglas de Facebook y ponen en riesgo al dealer](https://www.netsourcemedia.com/blog/facebook-marketplace-posting-software-violates-facebook-rules/)
