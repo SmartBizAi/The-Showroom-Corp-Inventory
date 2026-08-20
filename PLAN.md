@@ -6,6 +6,20 @@
 
 ---
 
+## ⚡ Resumen rápido (1 minuto)
+
+- **Qué es:** el dealer carga su inventario UNA vez → la app lo publica sola todos los días → los clientes caen en una sola bandeja.
+- **Decisión tomada (20 ago 2026):** estrategia 100% dentro de las normas. Nada que pueda frenar el negocio por bans o incumplimiento. Sin bots, sin trucos.
+- **Publica solo (0 clicks):** FB Page · Instagram · CarGurus · OfferUp · ads dentro de Marketplace.
+- **Publica con 1 click por auto:** FB Marketplace — la app prepara todo, el vendedor solo pulsa "Publicar" (~5 min/día).
+- **Inventario entra por:** Excel · a mano · (fase 4) la web del dealer. El VIN llena los datos solo. Captions ES+EN con IA.
+- **Clientes:** Messenger + IG + WhatsApp en una bandeja, respuestas bilingües, seguimiento hasta la venta.
+- **Tiempo a v1:** ~10–12 semanas (primer valor real: semana 3–4).
+- **Números:** operar cuesta ~$75–100/mes · se vende a $99–249/mes por dealer · la competencia cobra $249–1,000.
+- **Siguiente paso:** Fase 0 — esqueleto de la app (1 semana).
+
+---
+
 ## 1. El producto
 
 **En una frase:** una app donde el dealer mantiene su inventario al día (a mano, por Excel o sincronizado con su web) y la app se encarga de publicarlo todos los días en las plataformas donde compra la gente de Miami — con captions en español e inglés — y de recibir y organizar a los clientes que responden.
@@ -17,7 +31,7 @@
 1. **Marketing** — publicación diaria automática/asistida del inventario en Facebook Marketplace, Facebook Page, Instagram, CarGurus, OfferUp (y más adelante Craigslist, Autotrader, TikTok), respetando los límites de cada plataforma.
 2. **Atención al cliente** — bandeja unificada de leads (Messenger, Instagram DM, WhatsApp), respuestas rápidas bilingües, seguimiento de cada cliente hasta la venta.
 
-**Principio de producto — "one click":** el trabajo diario del dealer debe caber en un click. Onboarding con wizard (conectar cuentas, subir el Excel, elegir plantilla de captions — ~15 minutos, una sola vez); después, todo lo que tiene vía oficial corre solo, y lo asistido se resuelve con un click por día por vendedor (ver "Niveles de automatización" en §2).
+**Principio de producto — "one click":** el trabajo diario del dealer debe caber en un click. Onboarding con wizard (conectar cuentas, subir el Excel, elegir plantilla de captions — ~15 minutos, una sola vez); después, todo lo que tiene vía oficial corre solo, y Marketplace se resuelve con un click por auto — ~5 minutos al día por vendedor (ver "Niveles de automatización" en §2).
 
 **Por qué ahora:** el mercado ya está validado — CARVID cobra $249/mes, Shiftly ~$1,000/mes, Glo3D vende paquetes con fotografía 360. Ninguno está construido *bilingüe y para Miami*: captions ES/EN nativos, WhatsApp como canal principal de atención, y precio accesible para el dealer chico.
 
@@ -54,7 +68,7 @@ Así se cumple el requisito de "one click" sin regalar las cuentas de los vended
 |---|---|---|
 | **0 — Cero clicks** | Todo lo que tiene vía oficial corre solo y programado: FB Page, Instagram, feeds de CarGurus/OfferUp y Automotive Inventory Ads (la presencia oficial dentro de Marketplace, pagada). | Ninguno. |
 | **1 — Un click por auto** (default) | La extensión pre-llena el formulario completo (fotos, caption, precio, categoría, ubicación); el vendedor revisa y pulsa Publicar. ~1 minuto por auto, ~5 min/día. | Bajo — hay revisión humana real de cada listado. |
-| **2 — Un click por día** ("Turbo", opt-in) | El vendedor abre Facebook, pulsa **"Publicar la cola de hoy"** y la extensión publica los 3–5 autos del día en su navegador, con él presente. Funcionalmente igual a lo que venden Glo3D, CARVID o Marketplace Pro. | Asumido con consentimiento explícito: para el ToS de Meta es automatización; si la detectan, la restricción cae sobre esa cuenta. Se activa por cuenta, con aviso claro. |
+| **2 — Un click por día** ("Turbo") — **DESCARTADO** | El vendedor pulsaría "Publicar la cola de hoy" y la extensión publicaría los 3–5 autos del día en su navegador. Es lo que venden Glo3D, CARVID o Marketplace Pro. | **Decisión (20 ago 2026): fuera del roadmap.** Para el ToS de Meta es automatización y puede frenar el negocio con cuentas restringidas. El producto opera en Niveles 0 y 1; esto queda solo como referencia de mercado. |
 
 **Reglas duras (innegociables, aplican a todos los niveles):**
 - La sesión de Facebook vive **únicamente en el navegador del vendedor**. Nunca sesiones en la nube ni contraseñas/cookies en nuestro backend — las herramientas cloud con IPs de datacenter son la causa №1 de bans silenciosos.
@@ -160,7 +174,7 @@ Esqueleto Next.js + Supabase + Vercel · auth multi-tenant + RBAC (skill `admin-
 CRUD de vehículos con VIN decode · fotos · import Excel · captions IA ES/EN por plataforma · **cola diaria manual**: página móvil "Para publicar hoy" por vendedor con botón de copiar caption y galería de fotos. ➡️ *El MVP ya da valor real sin ninguna integración: convierte 20 minutos por publicación en 1.*
 
 ### Fase 2 — Automatización (~3–4 semanas)
-Extensión Chrome para Marketplace · publicación automática FB Page + IG (Graph API; app review en paralelo) · feed CarGurus por dealer · recordatorios de renovar/borrar vendidos.
+Extensión Chrome para Marketplace (Nivel 1: pre-llenado, el vendedor pulsa Publicar) · publicación automática FB Page + IG (Graph API; app review en paralelo) · feed CarGurus por dealer · recordatorios de renovar/borrar vendidos.
 
 ### Fase 3 — Atención al cliente (~3–4 semanas)
 Bandeja Messenger/IG/WhatsApp · respuestas rápidas bilingües · auto-respuesta IA · pipeline de leads + seguimientos.
